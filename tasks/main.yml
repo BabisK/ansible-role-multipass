@@ -1,0 +1,6 @@
+---
+- name: Install Multipass
+  ansible.builtin.import_tasks:
+    file: install.yml
+  tags:
+    - multipass

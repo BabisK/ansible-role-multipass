@@ -1,0 +1,56 @@
+---
+- name: Ensure dependencies are installed
+  ansible.builtin.apt:
+    name:
+      - snapd
+    state: present
+    update_cache: true
+  tags:
+    - multipass
+    - multipass.dependencies
+    - multipass.dependencies.install
+
+- name: Ensure dependencies are enabled
+  ansible.builtin.service:
+    name: snapd
+    state: started
+    enabled: true
+  tags:
+    - multipass
+    - multipass.dependencies
+    - multipass.dependencies.services
+
+- name: Install multipass
+  community.general.snap:
+    name: multipass
+  tags:
+    - multipass
+    - mutlipass.install
+
+- name: Retrieve current backend
+  ansible.builtin.command:
+    cmd: multipass get local.driver
+  register: command_output
+
+- set_fact:
+    current_backend={{ command_output.stdout }}
+
+- name: Set lxd backend
+  ansible.builtin.command:
+    cmd: multipass set local.driver=lxd
+  when: (mutlipass_backend == "lxd") and
+        ((current_backend  != "lxd") or (current_backend != ""))
+
+- name: Set qemu backend
+  ansible.builtin.command:
+    cmd: multipass set local.driver=qemu
+  when: (mutlipass_backend == "qemu") and
+        (current_backend  != "qemu")
+
+- name: Ensure libvirt dependency
+  ansible.builtin.apt:
+    name: libvirt-daemon-system
+    state: present
+    update_cache: true
+
+- name

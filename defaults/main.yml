@@ -1,0 +1,3 @@
+---
+# The backend is one of lxd, qemu, libvirt. Default is lxd
+mutlipass_backend: lxd
