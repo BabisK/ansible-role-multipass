@@ -1,0 +1,10 @@
+---
+- name: Exercise Multipass installation and settings
+  hosts: all
+  gather_facts: true
+  vars:
+    multipass_settings:
+      client.primary-name: primary
+      local.privileged-mounts: true
+  roles:
+    - ansible-role-multipass

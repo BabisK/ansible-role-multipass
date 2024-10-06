@@ -1,0 +1,24 @@
+---
+- name: Install and configure Multipass
+  tags: [multipass]
+  block:
+    - name: Validate platform and settings
+      ansible.builtin.assert:
+        that:
+          - ansible_os_family == 'Debian'
+          - multipass_settings is mapping
+          - multipass_settings.keys() | difference(['client.primary-name', 'local.bridged-network', 'local.privileged-mounts', 'local.passphrase']) | length == 0
+          - multipass_settings.get('client.primary-name', '') is string
+          - multipass_settings.get('local.bridged-network', '') is string
+          - multipass_settings.get('local.privileged-mounts', true) is boolean
+          - multipass_settings.get('local.passphrase', '') is string
+        fail_msg: >-
+          Multipass requires a Debian-family host and supported global settings.
+          Names, networks and passphrases must be strings; privileged-mounts must be a boolean.
+      no_log: true
+
+    - name: Install Multipass
+      ansible.builtin.import_tasks: install.yml
+
+    - name: Configure Multipass
+      ansible.builtin.import_tasks: configure.yml

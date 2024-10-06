@@ -1,0 +1,9 @@
+.venv/
+.idea/
+.agents/
+.claude/
+.codex/
+.junie/
+.opencode/
+_bmad/
+_bmad-output/

@@ -1,0 +1,83 @@
+---
+# In check mode a newly installed snap does not yet have a client to query.
+- name: Check whether the Multipass client is available
+  ansible.builtin.stat:
+    path: /snap/bin/multipass
+  register: multipass_client_binary
+  when: multipass_settings | length > 0
+
+- name: Read current Multipass settings
+  ansible.builtin.command:
+    argv:
+      - /snap/bin/multipass
+      - get
+      - "{{ item.key }}"
+  become: true
+  become_user: "{{ multipass_client_user if item.key == 'client.primary-name' else 'root' }}"
+  loop: "{{ multipass_settings | dict2items | rejectattr('key', 'equalto', 'local.passphrase') | list }}"
+  loop_control:
+    label: "{{ item.key }}"
+  register: multipass_current_settings
+  changed_when: false
+  check_mode: false
+  when: multipass_client_binary.stat.exists | default(false)
+
+- name: Apply Multipass settings
+  ansible.builtin.command:
+    argv:
+      - /snap/bin/multipass
+      - set
+      - "{{ item.item.key }}={{ (item.item.value | string | lower) if item.item.value is boolean else item.item.value }}"
+  become: true
+  become_user: "{{ multipass_client_user if item.item.key == 'client.primary-name' else 'root' }}"
+  loop: "{{ multipass_current_settings.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.key }}"
+  when:
+    - not (item.skipped | default(false))
+    - item.stdout != ((item.item.value | string | lower) if item.item.value is boolean else item.item.value)
+    - not ansible_check_mode
+  changed_when: true
+
+- name: Report settings that would change
+  ansible.builtin.debug:
+    msg: "Multipass setting {{ item.item.key }} would change"
+  loop: "{{ multipass_current_settings.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.key }}"
+  when:
+    - ansible_check_mode
+    - not (item.skipped | default(false))
+    - item.stdout != ((item.item.value | string | lower) if item.item.value is boolean else item.item.value)
+  changed_when: true
+
+- name: Report settings that cannot yet be inspected
+  ansible.builtin.debug:
+    msg: Multipass settings would be configured after the snap is installed.
+  when:
+    - ansible_check_mode
+    - multipass_settings | length > 0
+    - not (multipass_client_binary.stat.exists | default(false))
+  changed_when: true
+
+# Multipass only reports whether a passphrase exists, not its value.
+- name: Set the Multipass authentication passphrase
+  ansible.builtin.command:
+    argv:
+      - /snap/bin/multipass
+      - set
+      - "local.passphrase={{ multipass_settings['local.passphrase'] }}"
+  become: true
+  no_log: true
+  changed_when: true
+  when:
+    - "'local.passphrase' in multipass_settings"
+    - not ansible_check_mode
+
+- name: Report that the passphrase would be set
+  ansible.builtin.debug:
+    msg: The Multipass passphrase would be set.
+  changed_when: true
+  when:
+    - "'local.passphrase' in multipass_settings"
+    - ansible_check_mode

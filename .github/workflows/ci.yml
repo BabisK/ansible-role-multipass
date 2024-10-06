@@ -1,0 +1,20 @@
+---
+name: Ansible checks
+on: [push, pull_request]
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ansible-role-multipass
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install 'ansible-core>=2.15,<2.19'
+      - run: ansible-galaxy collection install -r collections/requirements.yml
+        working-directory: ansible-role-multipass
+      - run: ansible-playbook -i tests/inventory tests/test.yml --syntax-check
+        working-directory: ansible-role-multipass
+        env:
+          ANSIBLE_ROLES_PATH: ..
