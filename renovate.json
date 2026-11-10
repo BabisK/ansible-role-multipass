@@ -1,0 +1,13 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits"],
+  "prHourlyLimit": 0,
+  "packageRules": [
+    {
+      "description": "Keep the minimum Ansible support test on its established version",
+      "matchManagers": ["pip_requirements"],
+      "matchFileNames": ["requirements-ci-min.txt"],
+      "enabled": false
+    }
+  ]
+}

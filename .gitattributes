@@ -7,3 +7,8 @@
 /_bmad-output export-ignore
 /release-please-config.json export-ignore
 /.release-please-manifest.json export-ignore
+/renovate.json export-ignore
+/requirements-ci.txt export-ignore
+/requirements-ci-min.txt export-ignore
+/collections/requirements-min.yml export-ignore
+/ci/requirements.yml export-ignore

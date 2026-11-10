@@ -2,6 +2,15 @@
 name: Ansible checks
 on: [push, pull_request]
 jobs:
+  renovate-config:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate renovate.json
+        run: npx --yes --package renovate -- renovate-config-validator --strict
   commit-messages:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -14,16 +23,31 @@ jobs:
           fetch-depth: 0
       - uses: wagoid/commitlint-github-action@v6
   syntax:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python: '3.11'
+            requirements: requirements-ci-min.txt
+            collections: collections/requirements-min.yml
+          - requirements: requirements-ci.txt
+            collections: ci/requirements.yml
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           path: ansible-role-multipass
       - uses: actions/setup-python@v5
+        if: matrix.requirements == 'requirements-ci-min.txt'
         with:
-          python-version: '3.11'
-      - run: pip install 'ansible-core>=2.15,<2.19'
-      - run: ansible-galaxy collection install -r collections/requirements.yml
+          python-version: ${{ matrix.python }}
+      - uses: actions/setup-python@v5
+        if: matrix.requirements == 'requirements-ci.txt'
+        with:
+          python-version: '3.15'
+      - run: pip install -r '${{ matrix.requirements }}'
+        working-directory: ansible-role-multipass
+      - run: ansible-galaxy collection install -r '${{ matrix.collections }}'
         working-directory: ansible-role-multipass
       - run: ansible-playbook -i tests/inventory tests/test.yml --syntax-check
         working-directory: ansible-role-multipass
