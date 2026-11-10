@@ -47,6 +47,12 @@ The former `mutlipass_backend` variable is no longer used. Linux now supports QE
 
 Run `ansible-playbook -i tests/inventory tests/test.yml --syntax-check`. On a disposable, snap-capable Debian-family host, run `tests/idempotence.sh -i <inventory>` with suitable privilege escalation. The script applies the role twice and checks idempotence for readable settings; it installs software on the target.
 
+## Releases
+
+Use Conventional Commits in pull request titles and commits. Release-please opens a release pull request when features, fixes, performance improvements, reverts, or breaking changes are ready. Merging it creates a version tag and a GitHub release. Other commit types do not normally trigger a release.
+
+The release workflow uses a GitHub App installed on this repository, configured with the `RP_APP_CLIENT_ID` variable and `RP_APP_PRIVATE_KEY` secret. Do not manually edit the release manifest or `CHANGELOG.md`. PR-title and commit-message checks are advisory; maintainers should review them before merging. When squash merging, check the resulting commit title and body: conventional commit text in the body can affect release notes and version selection.
+
 ## License
 
 BSD-3-Clause.
