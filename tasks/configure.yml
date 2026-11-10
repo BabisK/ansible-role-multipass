@@ -18,6 +18,9 @@
   loop_control:
     label: "{{ item.key }}"
   register: multipass_current_settings
+  until: multipass_current_settings is succeeded
+  retries: 12
+  delay: 5
   changed_when: false
   check_mode: false
   when: multipass_client_binary.stat.exists | default(false)
@@ -69,6 +72,10 @@
       - "local.passphrase={{ multipass_settings['local.passphrase'] }}"
   become: true
   no_log: true
+  register: multipass_passphrase_result
+  until: multipass_passphrase_result is succeeded
+  retries: 12
+  delay: 5
   changed_when: true
   when:
     - "'local.passphrase' in multipass_settings"

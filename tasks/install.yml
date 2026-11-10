@@ -20,5 +20,9 @@
     name: multipass
     channel: "{{ multipass_snap_channel }}"
     state: present
+  register: multipass_snap_install
+  until: multipass_snap_install is succeeded
+  retries: 3
+  delay: 5
   become: true
   tags: [multipass.install]
