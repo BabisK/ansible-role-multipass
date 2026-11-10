@@ -13,7 +13,7 @@
     - name: Validate platform and settings
       ansible.builtin.assert:
         that:
-          - ansible_os_family == 'Debian'
+          - ansible_facts['os_family'] == 'Debian'
           - multipass_client_primary_name is none or multipass_client_primary_name is string
           - multipass_local_bridged_network is none or multipass_local_bridged_network is string
           - multipass_local_privileged_mounts is none or multipass_local_privileged_mounts is boolean
