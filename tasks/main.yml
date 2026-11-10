@@ -2,16 +2,22 @@
 - name: Install and configure Multipass
   tags: [multipass]
   block:
+    - name: Reject the removed settings map
+      ansible.builtin.assert:
+        that: multipass_settings is not defined
+        fail_msg: >-
+          multipass_settings has been removed. Use the individual multipass_client_primary_name,
+          multipass_local_bridged_network, multipass_local_privileged_mounts and
+          multipass_local_passphrase variables instead.
+
     - name: Validate platform and settings
       ansible.builtin.assert:
         that:
           - ansible_os_family == 'Debian'
-          - multipass_settings is mapping
-          - multipass_settings.keys() | difference(['client.primary-name', 'local.bridged-network', 'local.privileged-mounts', 'local.passphrase']) | length == 0
-          - multipass_settings.get('client.primary-name', '') is string
-          - multipass_settings.get('local.bridged-network', '') is string
-          - multipass_settings.get('local.privileged-mounts', true) is boolean
-          - multipass_settings.get('local.passphrase', '') is string
+          - multipass_client_primary_name is none or multipass_client_primary_name is string
+          - multipass_local_bridged_network is none or multipass_local_bridged_network is string
+          - multipass_local_privileged_mounts is none or multipass_local_privileged_mounts is boolean
+          - multipass_local_passphrase is none or multipass_local_passphrase is string
         fail_msg: >-
           Multipass requires a Debian-family host and supported global settings.
           Names, networks and passphrases must be strings; privileged-mounts must be a boolean.

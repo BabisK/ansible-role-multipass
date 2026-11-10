@@ -3,8 +3,7 @@
   hosts: all
   gather_facts: true
   vars:
-    multipass_settings:
-      client.primary-name: primary
-      local.privileged-mounts: true
+    multipass_client_primary_name: primary
+    multipass_local_privileged_mounts: true
   roles:
     - ansible-role-multipass

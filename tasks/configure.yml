@@ -4,7 +4,11 @@
   ansible.builtin.stat:
     path: /snap/bin/multipass
   register: multipass_client_binary
-  when: multipass_settings | length > 0
+  when: >-
+    multipass_client_primary_name is not none or
+    multipass_local_bridged_network is not none or
+    multipass_local_privileged_mounts is not none or
+    multipass_local_passphrase is not none
 
 - name: Read current Multipass settings
   ansible.builtin.command:
@@ -14,7 +18,12 @@
       - "{{ item.key }}"
   become: true
   become_user: "{{ multipass_client_user if item.key == 'client.primary-name' else 'root' }}"
-  loop: "{{ multipass_settings | dict2items | rejectattr('key', 'equalto', 'local.passphrase') | list }}"
+  vars:
+    readable_settings:
+      - {key: 'client.primary-name', value: '{{ multipass_client_primary_name }}'}
+      - {key: 'local.bridged-network', value: '{{ multipass_local_bridged_network }}'}
+      - {key: 'local.privileged-mounts', value: '{{ multipass_local_privileged_mounts }}'}
+  loop: "{{ readable_settings | rejectattr('value', 'none') | list }}"
   loop_control:
     label: "{{ item.key }}"
   register: multipass_current_settings
@@ -59,7 +68,11 @@
     msg: Multipass settings would be configured after the snap is installed.
   when:
     - ansible_check_mode
-    - multipass_settings | length > 0
+    - >-
+      multipass_client_primary_name is not none or
+      multipass_local_bridged_network is not none or
+      multipass_local_privileged_mounts is not none or
+      multipass_local_passphrase is not none
     - not (multipass_client_binary.stat.exists | default(false))
   changed_when: true
 
@@ -69,7 +82,7 @@
     argv:
       - /snap/bin/multipass
       - set
-      - "local.passphrase={{ multipass_settings['local.passphrase'] }}"
+      - "local.passphrase={{ multipass_local_passphrase }}"
   become: true
   no_log: true
   register: multipass_passphrase_result
@@ -78,7 +91,7 @@
   delay: 5
   changed_when: true
   when:
-    - "'local.passphrase' in multipass_settings"
+    - multipass_local_passphrase is not none
     - not ansible_check_mode
 
 - name: Report that the passphrase would be set
@@ -86,5 +99,5 @@
     msg: The Multipass passphrase would be set.
   changed_when: true
   when:
-    - "'local.passphrase' in multipass_settings"
+    - multipass_local_passphrase is not none
     - ansible_check_mode

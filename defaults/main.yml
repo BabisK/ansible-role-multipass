@@ -2,8 +2,11 @@
 # Snap channel to install and track.
 multipass_snap_channel: latest/stable
 
-# Only explicitly supplied settings are managed. See README for supported keys.
-multipass_settings: {}
-
 # client.primary-name is specific to the user running the Multipass client.
 multipass_client_user: root
+
+# Set a value to manage the setting; null leaves it unchanged.
+multipass_client_primary_name: null
+multipass_local_bridged_network: null
+multipass_local_privileged_mounts: null
+multipass_local_passphrase: null
