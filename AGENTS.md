@@ -15,3 +15,7 @@ An Ansible role that installs and configures Multipass on Debian-family hosts. S
 - Run `tests/idempotence.sh` only against a disposable, snap-capable host; it installs software and applies the role twice.
 
 <!-- /bmad:context -->
+
+## Dependency compatibility
+
+- Keep the supported Ansible, Python and collection versions as broad as practical while supporting and testing their latest releases. Raise minimum versions when necessary for current releases, with evidence.

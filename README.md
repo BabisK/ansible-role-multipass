@@ -5,6 +5,7 @@ Installs the Multipass snap and optionally configures its global CLI settings on
 ## Requirements
 
 - Ansible Core 2.15 or newer and the `community.general` collection: `ansible-galaxy collection install -r collections/requirements.yml`.
+- Select a collection version compatible with your Ansible Core version; `community.general` 14.0.1 requires Ansible Core 2.19 or newer.
 - A Debian-family host with systemd, snap support, access to the Snap Store, and a working QEMU/KVM environment. Running VMs requires appropriate virtualization support.
 - Privilege escalation to root; configuring a client setting for another user also requires escalation to that user.
 
